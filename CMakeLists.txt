@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 3.0.0)
-project(base16384 VERSION 2.2.0)
-SET(CMAKE_BUILD_TYPE "Release")
+cmake_minimum_required(VERSION 2.8.12)
+if (POLICY CMP0048)
+  cmake_policy(SET CMP0048 NEW)
+endif (POLICY CMP0048)
+project(base16384 VERSION 2.2.4)
 
 add_executable(base16384_b base16384.c)
 
@@ -10,21 +12,17 @@ if (${isBigEndian})
     add_definitions(-DWORDS_BIGENDIAN)
 endif()
 
-IF(NOT (CMAKE_SYSTEM_NAME MATCHES "Darwin"))
-    add_compile_options("-lc")
-ENDIF()
-
 IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    add_library(base16384 SHARED base1464.c)
-    add_library(base16384_s STATIC base1464.c)
+    add_library(base16384 SHARED file.c base1464.c)
+    add_library(base16384_s STATIC file.c base1464.c)
 ELSE()
-    add_library(base16384 SHARED base1432.c)
-    add_library(base16384_s STATIC base1432.c)
+    add_library(base16384 SHARED file.c base1432.c)
+    add_library(base16384_s STATIC file.c base1432.c)
 ENDIF()
 
 set_target_properties(base16384_b PROPERTIES OUTPUT_NAME base16384)
 set_target_properties(base16384_s PROPERTIES OUTPUT_NAME base16384)
-set_target_properties(base16384   PROPERTIES VERSION ${CMAKE_PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+set_target_properties(base16384   PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_link_libraries(base16384_b base16384_s)
 

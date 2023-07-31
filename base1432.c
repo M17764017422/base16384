@@ -4,7 +4,8 @@
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3.
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -38,7 +39,7 @@
 #  define be16toh(x) betoh16(x)
 #  define be32toh(x) betoh32(x)
 #endif
-#ifdef __MAC_10_0
+#ifdef __APPLE__
 #  define be16toh(x) ntohs(x)
 #  define be32toh(x) ntohl(x)
 #  define htobe16(x) ntohs(x)
@@ -61,7 +62,7 @@
 
 // #define DEBUG
 
-int encode(const char* data, int dlen, char* buf, int blen) {
+int base16384_encode(const char* data, int dlen, char* buf, int blen) {
 	int outlen = dlen / 7 * 8;
 	int offset = dlen % 7;
 	switch(offset) {	// 算上偏移标志字符占用的2字节
@@ -139,7 +140,7 @@ int encode(const char* data, int dlen, char* buf, int blen) {
 	return outlen;
 }
 
-int decode(const char* data, int dlen, char* buf, int blen) {
+int base16384_decode(const char* data, int dlen, char* buf, int blen) {
 	int outlen = dlen;
 	int offset = 0;
 	if(data[dlen-2] == '=') {
@@ -191,9 +192,13 @@ int decode(const char* data, int dlen, char* buf, int blen) {
 			if(offset--) {
 				buf[i++] = ((sum & 0x000f0000) >> 12) | ((sum & 0xf0000000) >> 28);
 				if(offset--) {
-					buf[i++] = (sum & 0x0f000000) >> 20;
+					buf[i] = (sum & 0x0f000000) >> 20;
 					// 这里有读取越界
-					sum = vals[n];
+					#ifdef WORDS_BIGENDIAN
+						sum = __builtin_bswap32(vals[n]);
+					#else
+						sum = vals[n];
+					#endif
 					sum -= 0x0000004e;
 					buf[i++] |= (sum & 0x0000003c) >> 2;
 					if(offset--) {
